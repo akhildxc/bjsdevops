@@ -1,0 +1,47 @@
+---
+- name: Install Docker and Setuptools
+  hosts: all
+  gather_facts: false
+  become: true
+  
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+    
+    - name: Install Docker dependencies
+      package:
+        name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
+        state: present
+      when: ansible_os_family == 'Debian'
+    
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+      when: ansible_os_family == 'Debian'
+    
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+        state: present
+      when: ansible_os_family == 'Debian'
+    
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == 'Debian'
+    
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+      when: ansible_os_family == 'Debian'
+    
+    - name: Install Setuptools
+      pip:
+        name: setuptools
+      when: ansible_os_family == 'Debian'
+
